@@ -1,4 +1,4 @@
 # https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
-name: Home Assistant Add-Ons
+name: Cecilkootz Home Assistant Add-Ons
 url: 'https://github.com/cecilkootz/hassos-addons'
 maintainer: Cecilkootz
