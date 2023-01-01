@@ -1,29 +1,33 @@
 ARG BUILD_FROM
+# hadolint ignore=DL3006
 FROM $BUILD_FROM
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base system
-ARG BUILD_ARCH=amd64
-ENV NODE_EXPORTER_VERSION=1.2.2
+ARG \
+  BUILD_ARCH \
+  NODE_EXPORTER_VERSION="1.5.0"
 
 # Copy root filesystem
 COPY rootfs /
 
+# hadolint ignore=DL3003,DL3018
 RUN \
-    ARCH="${BUILD_ARCH}" \
+    apk add --no-cache --update tar \
+    && ARCH="${BUILD_ARCH}" \
     && if [ "${BUILD_ARCH}" = "aarch64" ]; then ARCH="arm64"; fi \
     && curl -J -L -o /tmp/node_exporter.tar.gz \
-       "https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-1.2.2.linux-${ARCH}.tar.gz" \
+       "https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-${ARCH}.tar.gz" \
     && cd /tmp \
-    && tar -xvf /tmp/node_exporter.tar.gz \
-    && cp node_exporter-${NODE_EXPORTER_VERSION}.linux-${ARCH}/node_exporter /usr/local/bin/ \
+    && tar -xzvf node_exporter.tar.gz --strip-components=1 \
+    && mv node_exporter /usr/local/bin/ \
     && adduser -s /bin/false -D -H prometheus \
     && chown -R prometheus:prometheus /usr/local/bin/node_exporter \
-    && rm -f -r /tmp/*
+    && rm -rf /tmp/node_exporter* LICENSE NOTICE
 
-# Build arguments
-ARG BUILD_DATE
-ARG BUILD_REF
-ARG BUILD_VERSION
+# This add-on runs on the host pid namespace, making it impossible
+# to use S6-Overlay. Therefore the init system is disabled at this point.
+ENTRYPOINT []
+CMD ["/run.sh"]
