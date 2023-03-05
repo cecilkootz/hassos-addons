@@ -7,6 +7,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
 ARG BUILD_ARCH=amd64
+ARG TAILSCALE_VERSION=1.36.2
 RUN \
     apk add --no-cache \
     ip6tables=1.8.8-r1 \
@@ -25,7 +26,7 @@ RUN \
     && if [ "${BUILD_ARCH}" = "i386" ]; then ARCH="386"; fi \
     \
     && curl -L -s \
-    "https://pkgs.tailscale.com/stable/tailscale_1.34.1_${ARCH}.tgz" \
+    "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_${ARCH}.tgz" \
     | tar zxvf - -C /opt/ --strip-components 1 \
     \
     && rm -f -r \
