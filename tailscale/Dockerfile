@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:15.0.7
+ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:15.0.8
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -7,26 +7,25 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
 ARG BUILD_ARCH=amd64
-ARG TAILSCALE_VERSION=1.56.0
+ARG TAILSCALE_VERSION="v1.66.1"
 RUN \
     apk add --no-cache \
-    ip6tables \
-    ipcalc \
-    iproute2 \
-    iptables \
-    nginx \
+    ipcalc=1.0.3-r0 \
+    iproute2=6.6.0-r0 \
+    iptables=1.8.10-r3 \
+    nginx=1.24.0-r16 \
+    coreutils=9.4-r2 \
+    networkmanager-common=1.44.4-r0 \
     \
     && ln -sf /sbin/xtables-nft-multi /sbin/ip6tables \
     && ln -sf /sbin/xtables-nft-multi /sbin/iptables \
     \
     && if [ "${BUILD_ARCH}" = "aarch64" ]; then ARCH="arm64"; fi \
-    && if [ "${BUILD_ARCH}" = "armhf" ]; then ARCH="arm"; fi \
     && if [ "${BUILD_ARCH}" = "armv7" ]; then ARCH="arm"; fi \
     && if [ "${BUILD_ARCH}" = "amd64" ]; then ARCH="amd64"; fi \
-    && if [ "${BUILD_ARCH}" = "i386" ]; then ARCH="386"; fi \
     \
     && curl -L -s \
-    "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_${ARCH}.tgz" \
+    "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION#v}_${ARCH}.tgz" \
     | tar zxvf - -C /opt/ --strip-components 1 \
     \
     && rm -f -r \
@@ -34,6 +33,9 @@ RUN \
 
 # Copy root filesystem
 COPY rootfs /
+
+# S6 Overlay stage 2 hook
+ENV S6_STAGE2_HOOK=/etc/s6-overlay/scripts/stage2_hook.sh
 
 # Build arguments
 ARG BUILD_ARCH
