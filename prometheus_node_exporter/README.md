@@ -91,3 +91,11 @@ WIP
   - Yes, but that [add-on](https://github.com/hassio-addons/addon-prometheus) is for Prometheus server, not the node exporter.
 - Why does this add-on require so many permissions?
   - The add-on needs to access to host-level metrics (CPU, memory, disk, etc...). As such, I have requested all possible permissions. Please inspect the code of this add-on before you run it.
+- When I view my scrape configs at `http://your_home_assistant_ip_address:9100/metrics`, why does `nodename="0d869efa-prometheus-node-exporter"`? See [this issue](https://github.com/loganmarchione/hassos-addons/issues/21) for more details, but AFAIK, it can't be changed from within the add-on. Instead, you should update your Prometheus server configs to add a label for `nodename`:
+  ```
+    - job_name: 'homeassistant'
+    static_configs:
+      - targets: ['hass02.internal.mydomain.com:9100']
+        labels:
+          nodename: 'homeassistant'
+  ```
